@@ -81,6 +81,9 @@ impl Idt {
 }
 
 // Create wrapper functions that save/restore context
+// Must save ALL general-purpose registers: both caller-saved (rax, rcx, rdx, rsi, rdi, r8-r11)
+// and callee-saved (rbx, rbp, r12-r15) since interrupt handlers call Rust functions that
+// freely use callee-saved registers, corrupting the interrupted code's state.
 macro_rules! exception_wrapper {
     ($name:ident, $handler_name:ident) => {
         #[unsafe(naked)]
@@ -90,19 +93,31 @@ macro_rules! exception_wrapper {
                     "push rax",
                     "push rcx",
                     "push rdx",
+                    "push rbx",
+                    "push rbp",
                     "push rsi",
                     "push rdi",
                     "push r8",
                     "push r9",
                     "push r10",
                     "push r11",
+                    "push r12",
+                    "push r13",
+                    "push r14",
+                    "push r15",
                     "call {0}",
+                    "pop r15",
+                    "pop r14",
+                    "pop r13",
+                    "pop r12",
                     "pop r11",
                     "pop r10",
                     "pop r9",
                     "pop r8",
                     "pop rdi",
                     "pop rsi",
+                    "pop rbp",
+                    "pop rbx",
                     "pop rdx",
                     "pop rcx",
                     "pop rax",

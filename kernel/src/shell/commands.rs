@@ -65,12 +65,19 @@ fn cmd_version() {
 fn cmd_meminfo() {
     let (total, used, free) = memory::frame_allocator::stats();
 
-    println!("Memory Information:");
-    println!("  Total frames: {} ({} KB)", total, (total * 4) / 1024);
-    println!("  Used frames:  {} ({} KB)", used, (used * 4) / 1024);
-    println!("  Free frames:  {} ({} KB)", free, (free * 4) / 1024);
-    println!();
-    println!("Frame size: 4 KB");
+    println!("Physical Memory:");
+    println!("  Total frames: {} ({} KB)", total, total * 4);
+    println!("  Used frames:  {} ({} KB)", used, used * 4);
+    println!("  Free frames:  {} ({} KB)", free, free * 4);
+    println!("  Frame size: 4 KB");
+
+    if let Some((heap_total, heap_used, heap_free)) = memory::heap::stats() {
+        println!();
+        println!("Heap:");
+        println!("  Total: {} bytes ({} KB)", heap_total, heap_total / 1024);
+        println!("  Used:  {} bytes", heap_used);
+        println!("  Free:  {} bytes", heap_free);
+    }
 }
 
 fn cmd_halt() {

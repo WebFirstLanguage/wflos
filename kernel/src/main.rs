@@ -67,19 +67,7 @@ extern "C" fn _start() -> ! {
     arch::x86_64::pic::init();
     serial_println!("PIC initialized and remapped");
 
-    // Initialize keyboard
-    serial_println!("Initializing keyboard...");
-    drivers::keyboard::init();
-    serial_println!("Keyboard initialized");
-
-    // Enable interrupts
-    serial_println!("Enabling interrupts...");
-    unsafe {
-        core::arch::asm!("sti");
-    }
-    serial_println!("Interrupts enabled");
-
-    // Initialize frame allocator
+    // Initialize frame allocator (before interrupts and heap)
     if let Some(memmap_response) = limine::MEMMAP_REQUEST.get_response() {
         let entry_count = memmap_response.entry_count as usize;
 
@@ -110,19 +98,42 @@ extern "C" fn _start() -> ! {
         println!("Memory: {} KB total", (total * 4096) / 1024);
     }
 
-    // Heap allocator deferred - shell uses stack buffers
-    serial_println!("Heap allocator: Not required for shell");
-    println!("Heap: Using stack buffers");
+    // Initialize heap allocator (before interrupts)
+    serial_println!("Initializing heap allocator...");
+    match memory::heap::init(hhdm_offset) {
+        Ok(()) => {
+            serial_println!("Heap allocator initialized");
+            println!("Heap: 64 KB initialized");
+            memory::heap::verify_heap();
+        }
+        Err(e) => {
+            serial_println!("Heap allocator failed: {}", e);
+            println!("Heap: FAILED ({})", e);
+        }
+    }
+
+    // Initialize keyboard
+    serial_println!("Initializing keyboard...");
+    drivers::keyboard::init();
+    serial_println!("Keyboard initialized");
+
+    // Enable interrupts (after all initialization is complete)
+    serial_println!("Enabling interrupts...");
+    unsafe {
+        core::arch::asm!("sti");
+    }
+    serial_println!("Interrupts enabled");
 
     println!();
-    println!("Phase 4 complete: Shell operational");
+    println!("Phase 5 complete: Heap allocator operational");
     println!();
 
-    serial_println!("\n=== Phase 4 Complete ===");
+    serial_println!("\n=== Phase 5 Complete ===");
     serial_println!("  - GDT initialized and loaded");
     serial_println!("  - IDT initialized with exception handlers");
-    serial_println!("  - Frame allocator operational ({} frames available)", 64146);
-    serial_println!("  - Stack-based shell (no heap required)");
+    let (total, _used, _free) = memory::frame_allocator::stats();
+    serial_println!("  - Frame allocator operational ({} frames available)", total);
+    serial_println!("  - Heap allocator initialized (64 KB)");
     serial_println!("  - PIC remapped (IRQs at vectors 32-47)");
     serial_println!("  - Keyboard driver ready (IRQ1)");
     serial_println!("  - Interrupts enabled");
