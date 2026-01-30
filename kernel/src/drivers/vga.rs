@@ -158,6 +158,50 @@ impl VgaBuffer {
         serial_println!("Using direct VGA buffer: phys={:#x}, virt={:#x}", VGA_BUFFER_PHYSICAL, vga_virtual);
     }
 
+    fn scroll_fb(&mut self) {
+        if let Some(ref fb) = self.framebuffer {
+            // Copy each row up by one character height (16 pixels)
+            for row in 1..VGA_HEIGHT {
+                for pixel_row in 0..CHAR_HEIGHT {
+                    let src_y = row * CHAR_HEIGHT + pixel_row;
+                    let dst_y = (row - 1) * CHAR_HEIGHT + pixel_row;
+
+                    if src_y < fb.height && dst_y < fb.height {
+                        for x in 0..fb.width {
+                            let src_offset = src_y * fb.pitch + x * (fb.bpp as usize / 8);
+                            let dst_offset = dst_y * fb.pitch + x * (fb.bpp as usize / 8);
+
+                            unsafe {
+                                if fb.bpp == 32 {
+                                    let src_ptr = fb.address.add(src_offset) as *const u32;
+                                    let dst_ptr = fb.address.add(dst_offset) as *mut u32;
+                                    let pixel = ptr::read_volatile(src_ptr);
+                                    ptr::write_volatile(dst_ptr, pixel);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Clear the last row
+            for pixel_row in 0..CHAR_HEIGHT {
+                let y = (VGA_HEIGHT - 1) * CHAR_HEIGHT + pixel_row;
+                if y < fb.height {
+                    for x in 0..fb.width {
+                        let offset = y * fb.pitch + x * (fb.bpp as usize / 8);
+                        unsafe {
+                            if fb.bpp == 32 {
+                                let pixel_ptr = fb.address.add(offset) as *mut u32;
+                                ptr::write_volatile(pixel_ptr, 0x00000000); // Black
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fn draw_char_fb(&mut self, c: u8, x: usize, y: usize) {
         if let Some(ref fb) = self.framebuffer {
             let bitmap = get_char_bitmap(c);
@@ -193,8 +237,15 @@ impl VgaBuffer {
                     self.column_position = 0;
                     self.row_position += 1;
                     if self.row_position >= VGA_HEIGHT {
+                        self.scroll_fb();
                         self.row_position = VGA_HEIGHT - 1;
-                        // TODO: Implement scrolling
+                    }
+                }
+                b'\x08' => {
+                    // Backspace - move back and clear character
+                    if self.column_position > 0 {
+                        self.column_position -= 1;
+                        self.draw_char_fb(b' ', self.column_position, self.row_position);
                     }
                 }
                 byte => {
@@ -202,6 +253,7 @@ impl VgaBuffer {
                         self.column_position = 0;
                         self.row_position += 1;
                         if self.row_position >= VGA_HEIGHT {
+                            self.scroll_fb();
                             self.row_position = VGA_HEIGHT - 1;
                         }
                     }
@@ -306,6 +358,25 @@ impl VgaBuffer {
     }
 
     pub fn clear(&mut self) {
+        // Clear framebuffer if available
+        if let Some(ref fb) = self.framebuffer {
+            // Clear entire framebuffer to black
+            for y in 0..fb.height {
+                for x in 0..fb.width {
+                    let offset = y * fb.pitch + x * (fb.bpp as usize / 8);
+                    unsafe {
+                        if fb.bpp == 32 {
+                            let pixel_ptr = fb.address.add(offset) as *mut u32;
+                            ptr::write_volatile(pixel_ptr, 0x00000000); // Black
+                        }
+                    }
+                }
+            }
+            self.column_position = 0;
+            self.row_position = 0;
+            return;
+        }
+
         // Limine terminal handles clearing internally, just reset position
         if self.limine_terminal.is_some() {
             // Send ANSI clear screen sequence
