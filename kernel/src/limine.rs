@@ -46,7 +46,8 @@ pub struct LimineHhdmResponse {
 pub static HHDM_REQUEST: LimineRequest<LimineHhdmResponse> =
     LimineRequest::new(0x48dcf1cb8ad2b852, 0x63984e959a98244b);
 
-// Framebuffer Request (for future graphics support)
+// Framebuffer structures (needed by Terminal)
+// NOTE: We don't request the framebuffer directly, but the Terminal uses it
 #[repr(C)]
 pub struct LimineFramebufferResponse {
     pub revision: u64,
@@ -70,6 +71,7 @@ pub struct LimineFramebuffer {
     pub blue_mask_shift: u8,
 }
 
+// Framebuffer Request - Request graphics framebuffer for display
 #[used]
 #[link_section = ".limine_reqs"]
 pub static FRAMEBUFFER_REQUEST: LimineRequest<LimineFramebufferResponse> =
@@ -124,3 +126,60 @@ pub struct LimineKernelAddressResponse {
 #[link_section = ".limine_reqs"]
 pub static KERNEL_ADDRESS_REQUEST: LimineRequest<LimineKernelAddressResponse> =
     LimineRequest::new(0x71ba76863cc55f63, 0xb2644a48c516a487);
+
+// Terminal Request (for text output via Limine)
+type LimineTerminalCallback = extern "C" fn(*const LimineTerminal, u64, u64, u64, u64);
+
+#[repr(C)]
+pub struct LimineTerminalRequest {
+    id: [u64; 4],
+    revision: u64,
+    response: *const LimineTerminalResponse,
+    callback: Option<LimineTerminalCallback>,
+}
+
+unsafe impl Sync for LimineTerminalRequest {}
+
+impl LimineTerminalRequest {
+    pub const fn new_with_callback(callback: Option<LimineTerminalCallback>) -> Self {
+        LimineTerminalRequest {
+            id: [LIMINE_COMMON_MAGIC[0], LIMINE_COMMON_MAGIC[1], 0xc8ac59310c2b0844, 0xa68d0c7265d38878],
+            revision: 0,
+            response: ptr::null(),
+            callback,
+        }
+    }
+
+    pub fn get_response(&self) -> Option<&'static LimineTerminalResponse> {
+        if self.response.is_null() {
+            None
+        } else {
+            Some(unsafe { &*self.response })
+        }
+    }
+}
+
+#[repr(C)]
+pub struct LimineTerminalResponse {
+    pub revision: u64,
+    pub terminal_count: u64,
+    pub terminals: *const *const LimineTerminal,
+    pub write: Option<extern "C" fn(*const LimineTerminal, *const u8, u64)>,
+}
+
+#[repr(C)]
+pub struct LimineTerminal {
+    pub columns: u32,
+    pub rows: u32,
+    pub framebuffer: *const LimineFramebuffer,
+}
+
+// Terminal callback - does nothing for now
+extern "C" fn terminal_callback(_term: *const LimineTerminal, _a: u64, _b: u64, _c: u64, _d: u64) {
+    // No-op callback
+}
+
+#[used]
+#[link_section = ".limine_reqs"]
+pub static TERMINAL_REQUEST: LimineTerminalRequest =
+    LimineTerminalRequest::new_with_callback(Some(terminal_callback));

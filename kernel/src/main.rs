@@ -41,6 +41,12 @@ extern "C" fn _start() -> ! {
     // Clear screen
     drivers::vga::clear_screen();
 
+    // Test pattern to verify VGA is visible
+    println!("===============================================================================");
+    println!("                    VGA TEXT MODE TEST - YOU SHOULD SEE THIS!                 ");
+    println!("===============================================================================");
+    println!();
+
     // Display boot message
     println!("wflos - Rust Microkernel OS");
     println!("Version 0.4.0 (Phase 4: Command-Line Interface)");
