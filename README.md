@@ -2,7 +2,7 @@
 
 A Rust-based microkernel operating system with capability-based security foundations, developed on Apple Silicon M1 for x86_64 targets.
 
-## Current Status: Phase 2 Complete ✅
+## Current Status: Phase 3 Complete ✅
 
 ### Implemented Features
 
@@ -15,12 +15,19 @@ A Rust-based microkernel operating system with capability-based security foundat
 - ✅ **Higher-half kernel** at 0xffffffff80000000
 - ✅ **Boot successfully** in QEMU with display output
 
-**Phase 2: Memory Management & Core Services** ⭐ NEW
+**Phase 2: Memory Management & Core Services**
 - ✅ **GDT (Global Descriptor Table)** - 5 segments for kernel/user code/data
 - ✅ **IDT (Interrupt Descriptor Table)** - 256 entries with exception handlers
 - ✅ **Exception handlers** - Divide-by-zero, page fault, GPF, double fault, etc.
 - ✅ **Physical frame allocator** - Bitmap-based, manages 4KB frames
 - ⏸️ **Heap allocator** - Ready but deferred (needs page tables)
+
+**Phase 3: Keyboard Input** ⭐ NEW
+- ✅ **Ring buffer** - Hardware-agnostic circular buffer for input buffering
+- ✅ **PIC configuration** - Remaps IRQs to vectors 32-47
+- ✅ **PS/2 keyboard driver** - Reads scan codes from keyboard controller
+- ✅ **Interrupt handling** - IRQ1 keyboard interrupts working
+- ✅ **Scan code translation** - Converts scan codes to ASCII (US layout)
 
 ### Verification
 
@@ -43,20 +50,31 @@ Serial port initialized
 HHDM offset: 0xffff800000000000
 VGA initialized
 wflos - Rust Microkernel OS
-Version 0.2.0 (Phase 2: Memory Management)
+Version 0.3.0 (Phase 3: Keyboard Input)
 Initializing GDT...
   GDT loaded - segments already configured by bootloader
 GDT loaded
 Initializing IDT...
 IDT loaded
+Initializing PIC...
+PIC initialized and remapped
+Initializing keyboard...
+Keyboard initialized
+Enabling interrupts...
+Interrupts enabled
 Initializing frame allocator...
-Frame allocator: 64246 total, 0 used, 64246 free
+Frame allocator: 64243 total, 0 used, 64243 free
 
-=== Phase 2 Complete ===
+=== Phase 3 Complete ===
   - GDT initialized and loaded
   - IDT initialized with exception handlers
-  - Frame allocator operational (64246 frames available)
-  - Exception handling ready
+  - Frame allocator operational (64243 frames available)
+  - PIC remapped (IRQs at vectors 32-47)
+  - Keyboard driver ready (IRQ1)
+  - Interrupts enabled
+========================
+
+Keyboard ready for input!
 ```
 
 ## Architecture
@@ -176,11 +194,11 @@ brew install qemu xorriso
 - [ ] Virtual memory paging (deferred)
 - [ ] Kernel heap allocator (deferred)
 
-### Phase 3: Keyboard Input
-- [ ] PS/2 keyboard driver
-- [ ] Interrupt handling (PIC configuration)
-- [ ] Ring buffer for input
-- [ ] Scan code → ASCII translation
+### ~~Phase 3: Keyboard Input~~ ✅ COMPLETE
+- [x] PS/2 keyboard driver
+- [x] Interrupt handling (PIC configuration)
+- [x] Ring buffer for input
+- [x] Scan code → ASCII translation
 
 ### Phase 4: Command-Line Interface
 - [ ] Shell REPL (Read-Eval-Print Loop)

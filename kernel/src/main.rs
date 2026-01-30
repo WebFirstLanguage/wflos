@@ -42,7 +42,7 @@ extern "C" fn _start() -> ! {
 
     // Display boot message
     println!("wflos - Rust Microkernel OS");
-    println!("Version 0.1.0 (Phase 1: Minimal Boot)");
+    println!("Version 0.3.0 (Phase 3: Keyboard Input)");
     println!();
     println!("Hello from kernel!");
     println!();
@@ -50,7 +50,7 @@ extern "C" fn _start() -> ! {
 
     serial_println!("VGA initialized");
     serial_println!("wflos - Rust Microkernel OS");
-    serial_println!("Version 0.2.0 (Phase 2: Memory Management)");
+    serial_println!("Version 0.3.0 (Phase 3: Keyboard Input)");
 
     // Initialize GDT
     serial_println!("Initializing GDT...");
@@ -61,6 +61,23 @@ extern "C" fn _start() -> ! {
     serial_println!("Initializing IDT...");
     arch::x86_64::idt::init();
     serial_println!("IDT loaded");
+
+    // Initialize PIC
+    serial_println!("Initializing PIC...");
+    arch::x86_64::pic::init();
+    serial_println!("PIC initialized and remapped");
+
+    // Initialize keyboard
+    serial_println!("Initializing keyboard...");
+    drivers::keyboard::init();
+    serial_println!("Keyboard initialized");
+
+    // Enable interrupts
+    serial_println!("Enabling interrupts...");
+    unsafe {
+        core::arch::asm!("sti");
+    }
+    serial_println!("Interrupts enabled");
 
     // Initialize frame allocator
     if let Some(memmap_response) = limine::MEMMAP_REQUEST.get_response() {
@@ -99,15 +116,23 @@ extern "C" fn _start() -> ! {
     println!("Heap: Not yet implemented");
 
     println!();
-    println!("Phase 2 complete: Memory management operational");
+    println!("Phase 3 complete: Keyboard input operational");
     println!();
 
-    serial_println!("\n=== Phase 2 Complete ===");
+    serial_println!("\n=== Phase 3 Complete ===");
     serial_println!("  - GDT initialized and loaded");
     serial_println!("  - IDT initialized with exception handlers");
     serial_println!("  - Frame allocator operational ({} frames available)", 64246);
-    serial_println!("  - Exception handling ready");
+    serial_println!("  - PIC remapped (IRQs at vectors 32-47)");
+    serial_println!("  - Keyboard driver ready (IRQ1)");
+    serial_println!("  - Interrupts enabled");
     serial_println!("========================\n");
+
+    // Keyboard is ready
+    serial_println!("Keyboard ready for input!");
+    println!();
+    println!("Keyboard ready! The PS/2 keyboard driver is operational.");
+    println!();
 
     // Display memory map information
     if let Some(memmap_response) = limine::MEMMAP_REQUEST.get_response() {

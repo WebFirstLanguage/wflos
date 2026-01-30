@@ -120,6 +120,7 @@ exception_wrapper!(breakpoint_wrapper, breakpoint_handler);
 exception_wrapper!(page_fault_wrapper, page_fault_handler);
 exception_wrapper!(general_protection_fault_wrapper, general_protection_fault_handler);
 exception_wrapper!(double_fault_wrapper, double_fault_handler);
+exception_wrapper!(keyboard_wrapper, keyboard_interrupt_handler);
 
 static mut IDT: Idt = Idt::new();
 
@@ -132,6 +133,9 @@ pub fn init() {
         IDT.set_handler(8, double_fault_wrapper as usize);
         IDT.set_handler(13, general_protection_fault_wrapper as usize);
         IDT.set_handler(14, page_fault_wrapper as usize);
+
+        // Install IRQ handlers (remapped to 32+)
+        IDT.set_handler(33, keyboard_wrapper as usize); // IRQ1 -> vector 33
 
         // Load IDT
         IDT.load();

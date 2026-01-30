@@ -1,6 +1,7 @@
 /// Exception and interrupt handlers for x86_64
 
 use crate::{println, serial_println};
+use crate::drivers;
 
 #[no_mangle]
 pub extern "C" fn divide_by_zero_handler() {
@@ -72,4 +73,9 @@ pub extern "C" fn double_fault_handler() {
             core::arch::asm!("hlt");
         }
     }
+}
+
+#[no_mangle]
+pub extern "C" fn keyboard_interrupt_handler() {
+    drivers::keyboard::handle_interrupt();
 }
