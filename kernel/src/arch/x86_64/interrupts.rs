@@ -1,4 +1,4 @@
-/// Exception and interrupt handlers for x86_64
+//! Exception and interrupt handlers for x86_64
 
 use crate::{println, serial_println};
 use crate::drivers;

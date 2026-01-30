@@ -1,5 +1,5 @@
-/// Hardware-agnostic ring buffer (circular buffer)
-/// Thread-safe and testable on host system
+//! Hardware-agnostic ring buffer (circular buffer)
+//! Thread-safe and testable on host system
 
 use core::sync::atomic::{AtomicUsize, Ordering};
 
@@ -7,6 +7,12 @@ pub struct RingBuffer<T, const N: usize> {
     buffer: [Option<T>; N],
     read_pos: AtomicUsize,
     write_pos: AtomicUsize,
+}
+
+impl<T: Copy, const N: usize> Default for RingBuffer<T, N> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T: Copy, const N: usize> RingBuffer<T, N> {

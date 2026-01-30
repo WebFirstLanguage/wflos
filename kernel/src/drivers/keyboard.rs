@@ -1,5 +1,5 @@
-/// PS/2 Keyboard driver
-/// Handles scan codes from PS/2 keyboard controller
+//! PS/2 Keyboard driver
+//! Handles scan codes from PS/2 keyboard controller
 
 use crate::arch::x86_64::pic;
 use crate::sync::spinlock::Spinlock;
@@ -7,6 +7,7 @@ use shared::data_structures::ring_buffer::RingBuffer;
 
 const PS2_DATA_PORT: u16 = 0x60;
 const PS2_STATUS_PORT: u16 = 0x64;
+#[allow(dead_code)]
 const PS2_COMMAND_PORT: u16 = 0x64;
 
 const BUFFER_SIZE: usize = 256;
@@ -120,6 +121,7 @@ fn scancode_to_ascii(scan_code: u8) -> Option<char> {
     }
 }
 
+#[allow(dead_code)]
 #[inline]
 unsafe fn outb(port: u16, value: u8) {
     core::arch::asm!(

@@ -1,5 +1,5 @@
-/// PIC (Programmable Interrupt Controller) configuration
-/// Remaps IRQs to avoid conflicts with CPU exceptions
+//! PIC (Programmable Interrupt Controller) configuration
+//! Remaps IRQs to avoid conflicts with CPU exceptions
 
 use core::arch::asm;
 
@@ -58,6 +58,7 @@ pub fn enable_irq(irq: u8) {
     unsafe { outb(port, value) };
 }
 
+#[allow(dead_code)]
 /// Disable a specific IRQ line
 pub fn disable_irq(irq: u8) {
     let port = if irq < 8 { PIC1_DATA } else { PIC2_DATA };
@@ -75,6 +76,7 @@ pub fn send_eoi(irq: u8) {
     }
 }
 
+#[allow(dead_code)]
 /// Disable all IRQs
 pub fn disable_all() {
     unsafe {

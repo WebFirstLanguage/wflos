@@ -1,6 +1,6 @@
-/// VGA text mode driver
-/// Physical address: 0xB8000
-/// Access through Limine's Higher-Half Direct Map (HHDM)
+//! VGA text mode driver
+//! Physical address: 0xB8000
+//! Access through Limine's Higher-Half Direct Map (HHDM)
 
 use crate::sync::spinlock::Spinlock;
 use core::fmt;
@@ -10,6 +10,7 @@ const VGA_WIDTH: usize = 80;
 const VGA_HEIGHT: usize = 25;
 const VGA_BUFFER_PHYSICAL: usize = 0xB8000;
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Color {

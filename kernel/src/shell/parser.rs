@@ -1,9 +1,9 @@
-/// Command parser
-/// Parses user input into commands
+//! Command parser
+//! Parses user input into commands
 
 use super::commands::Command;
 
-pub fn parse(input: &str) -> Result<Command, &'static str> {
+pub fn parse(input: &str) -> Result<Command<'_>, &'static str> {
     let input = input.trim();
 
     if input.is_empty() {

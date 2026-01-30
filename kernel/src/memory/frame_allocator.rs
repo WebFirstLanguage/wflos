@@ -1,6 +1,6 @@
-/// Physical frame allocator using bitmap
-/// Manages 4KB physical memory frames
-/// Properly handles non-contiguous memory regions from the bootloader memory map
+//! Physical frame allocator using bitmap
+//! Manages 4KB physical memory frames
+//! Properly handles non-contiguous memory regions from the bootloader memory map
 
 use crate::limine::{LimineMemoryMapEntry, LIMINE_MEMMAP_USABLE};
 use crate::sync::spinlock::Spinlock;
@@ -62,6 +62,7 @@ impl FrameAllocator {
         // Mark all frames as free initially (bitmap already zeroed)
     }
 
+    #[allow(dead_code)]
     /// Convert a bitmap frame index to a physical address by walking regions
     fn frame_index_to_phys(&self, index: usize) -> Option<usize> {
         let mut offset = 0;
@@ -76,6 +77,7 @@ impl FrameAllocator {
         None
     }
 
+    #[allow(dead_code)]
     /// Convert a physical address to a bitmap frame index
     fn phys_to_frame_index(&self, phys_addr: usize) -> Option<usize> {
         let mut offset = 0;
@@ -91,6 +93,7 @@ impl FrameAllocator {
         None
     }
 
+    #[allow(dead_code)]
     /// Allocate a single frame, returns physical address
     pub fn allocate_frame(&mut self) -> Option<usize> {
         // Find first free frame
@@ -160,6 +163,7 @@ impl FrameAllocator {
         None // Could not find enough contiguous frames
     }
 
+    #[allow(dead_code)]
     /// Deallocate a frame, returns it to the free pool
     pub fn deallocate_frame(&mut self, phys_addr: usize) {
         let frame_index = match self.phys_to_frame_index(phys_addr) {
@@ -196,6 +200,7 @@ pub fn init(memory_map: &[&LimineMemoryMapEntry], hhdm_offset: u64) {
     FRAME_ALLOCATOR.lock().init(memory_map, hhdm_offset);
 }
 
+#[allow(dead_code)]
 pub fn allocate_frame() -> Option<usize> {
     FRAME_ALLOCATOR.lock().allocate_frame()
 }
@@ -204,6 +209,7 @@ pub fn allocate_contiguous_frames(count: usize) -> Option<usize> {
     FRAME_ALLOCATOR.lock().allocate_contiguous_frames(count)
 }
 
+#[allow(dead_code)]
 pub fn deallocate_frame(phys_addr: usize) {
     FRAME_ALLOCATOR.lock().deallocate_frame(phys_addr);
 }

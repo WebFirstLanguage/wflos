@@ -1,5 +1,5 @@
-/// Interrupt Descriptor Table (IDT) for x86_64
-/// Handles CPU exceptions and hardware interrupts
+//! Interrupt Descriptor Table (IDT) for x86_64
+//! Handles CPU exceptions and hardware interrupts
 
 use core::arch::asm;
 
@@ -88,43 +88,41 @@ macro_rules! exception_wrapper {
     ($name:ident, $handler_name:ident) => {
         #[unsafe(naked)]
         pub extern "C" fn $name() {
-            unsafe {
-                core::arch::naked_asm!(
-                    "push rax",
-                    "push rcx",
-                    "push rdx",
-                    "push rbx",
-                    "push rbp",
-                    "push rsi",
-                    "push rdi",
-                    "push r8",
-                    "push r9",
-                    "push r10",
-                    "push r11",
-                    "push r12",
-                    "push r13",
-                    "push r14",
-                    "push r15",
-                    "call {0}",
-                    "pop r15",
-                    "pop r14",
-                    "pop r13",
-                    "pop r12",
-                    "pop r11",
-                    "pop r10",
-                    "pop r9",
-                    "pop r8",
-                    "pop rdi",
-                    "pop rsi",
-                    "pop rbp",
-                    "pop rbx",
-                    "pop rdx",
-                    "pop rcx",
-                    "pop rax",
-                    "iretq",
-                    sym crate::arch::x86_64::interrupts::$handler_name,
-                );
-            }
+            core::arch::naked_asm!(
+                "push rax",
+                "push rcx",
+                "push rdx",
+                "push rbx",
+                "push rbp",
+                "push rsi",
+                "push rdi",
+                "push r8",
+                "push r9",
+                "push r10",
+                "push r11",
+                "push r12",
+                "push r13",
+                "push r14",
+                "push r15",
+                "call {0}",
+                "pop r15",
+                "pop r14",
+                "pop r13",
+                "pop r12",
+                "pop r11",
+                "pop r10",
+                "pop r9",
+                "pop r8",
+                "pop rdi",
+                "pop rsi",
+                "pop rbp",
+                "pop rbx",
+                "pop rdx",
+                "pop rcx",
+                "pop rax",
+                "iretq",
+                sym crate::arch::x86_64::interrupts::$handler_name,
+            );
         }
     };
 }
@@ -141,18 +139,20 @@ static mut IDT: Idt = Idt::new();
 
 pub fn init() {
     unsafe {
+        let idt = &mut *core::ptr::addr_of_mut!(IDT);
+
         // Install exception handlers
-        IDT.set_handler(0, divide_by_zero_wrapper as usize);
-        IDT.set_handler(1, debug_wrapper as usize);
-        IDT.set_handler(3, breakpoint_wrapper as usize);
-        IDT.set_handler(8, double_fault_wrapper as usize);
-        IDT.set_handler(13, general_protection_fault_wrapper as usize);
-        IDT.set_handler(14, page_fault_wrapper as usize);
+        idt.set_handler(0, divide_by_zero_wrapper as *const () as usize);
+        idt.set_handler(1, debug_wrapper as *const () as usize);
+        idt.set_handler(3, breakpoint_wrapper as *const () as usize);
+        idt.set_handler(8, double_fault_wrapper as *const () as usize);
+        idt.set_handler(13, general_protection_fault_wrapper as *const () as usize);
+        idt.set_handler(14, page_fault_wrapper as *const () as usize);
 
         // Install IRQ handlers (remapped to 32+)
-        IDT.set_handler(33, keyboard_wrapper as usize); // IRQ1 -> vector 33
+        idt.set_handler(33, keyboard_wrapper as *const () as usize); // IRQ1 -> vector 33
 
         // Load IDT
-        IDT.load();
+        (&*core::ptr::addr_of!(IDT)).load();
     }
 }

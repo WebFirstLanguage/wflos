@@ -1,5 +1,5 @@
-/// Global Descriptor Table (GDT) for x86_64
-/// Required for long mode, defines code and data segments
+//! Global Descriptor Table (GDT) for x86_64
+//! Required for long mode, defines code and data segments
 
 use core::arch::asm;
 

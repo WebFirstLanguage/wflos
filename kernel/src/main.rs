@@ -72,26 +72,21 @@ extern "C" fn _start() -> ! {
         let entry_count = memmap_response.entry_count as usize;
 
         // Can't use Vec yet (heap not initialized), build array manually
-        let mut map_entries: [Option<&limine::LimineMemoryMapEntry>; 64] = [None; 64];
+        // Use a dummy reference that will be overwritten for each valid entry
+        let dummy = unsafe { &**memmap_response.entries };
+        let mut map_slice: [&limine::LimineMemoryMapEntry; 64] = [dummy; 64];
         let mut map_count = 0;
 
-        for i in 0..entry_count.min(64) {
+        for (i, slot) in map_slice.iter_mut().enumerate().take(entry_count.min(64)) {
             let entry = unsafe { &**memmap_response.entries.add(i) };
-            map_entries[i] = Some(entry);
+            *slot = entry;
             map_count += 1;
         }
 
-        // Build slice for init
-        let mut map_slice: [&limine::LimineMemoryMapEntry; 64] =
-            unsafe { core::mem::zeroed() };
-        for i in 0..map_count {
-            if let Some(entry) = map_entries[i] {
-                map_slice[i] = entry;
-            }
-        }
+        let initialized_slice = &map_slice[..map_count];
 
         serial_println!("Initializing frame allocator...");
-        memory::frame_allocator::init(&map_slice[..map_count], hhdm_offset);
+        memory::frame_allocator::init(initialized_slice, hhdm_offset);
 
         let (total, used, free) = memory::frame_allocator::stats();
         serial_println!("Frame allocator: {} total, {} used, {} free", total, used, free);
@@ -145,34 +140,4 @@ extern "C" fn _start() -> ! {
 
     // Run the shell REPL (never returns)
     shell::run();
-
-    // Display memory map information
-    if let Some(memmap_response) = limine::MEMMAP_REQUEST.get_response() {
-        println!("Memory map entries: {}", memmap_response.entry_count);
-
-        let mut total_usable = 0u64;
-        for i in 0..memmap_response.entry_count {
-            let entry = unsafe { &**memmap_response.entries.add(i as usize) };
-            if entry.entry_type == limine::LIMINE_MEMMAP_USABLE {
-                total_usable += entry.length;
-            }
-        }
-
-        println!("Total usable memory: {} MB", total_usable / 1024 / 1024);
-    }
-
-    // Display kernel address information
-    if let Some(kernel_addr) = limine::KERNEL_ADDRESS_REQUEST.get_response() {
-        println!("Kernel physical base: {:#x}", kernel_addr.physical_base);
-        println!("Kernel virtual base: {:#x}", kernel_addr.virtual_base);
-    }
-
-
-    // Halt loop
-    println!("System halted. Press Ctrl+C in QEMU to exit.");
-    loop {
-        unsafe {
-            core::arch::asm!("hlt");
-        }
-    }
 }

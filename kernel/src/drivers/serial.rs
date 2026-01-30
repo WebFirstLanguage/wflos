@@ -1,5 +1,5 @@
-/// Serial port driver for COM1 (0x3F8)
-/// Used for debugging output in QEMU
+//! Serial port driver for COM1 (0x3F8)
+//! Used for debugging output in QEMU
 
 use crate::sync::spinlock::Spinlock;
 use core::fmt;

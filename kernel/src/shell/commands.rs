@@ -1,5 +1,5 @@
-/// Built-in shell commands
-/// Implements command execution
+//! Built-in shell commands
+//! Implements command execution
 
 use crate::{println, drivers, memory};
 
@@ -21,7 +21,7 @@ pub fn execute(cmd: Command) {
         }
         Command::Help => cmd_help(),
         Command::Clear => cmd_clear(),
-        Command::Echo(text) => cmd_echo(&text),
+        Command::Echo(text) => cmd_echo(text),
         Command::Version => cmd_version(),
         Command::MemInfo => cmd_meminfo(),
         Command::Halt => cmd_halt(),

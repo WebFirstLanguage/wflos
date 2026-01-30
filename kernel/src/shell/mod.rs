@@ -1,5 +1,5 @@
-/// Shell REPL (Read-Eval-Print Loop)
-/// Provides interactive command-line interface
+//! Shell REPL (Read-Eval-Print Loop)
+//! Provides interactive command-line interface
 
 pub mod parser;
 pub mod commands;
@@ -20,14 +20,12 @@ pub fn run() -> ! {
     println!("Type 'help' for available commands");
     println!();
 
-    let mut line_pos = 0;
-
     loop {
         // Display prompt
         print!("{}", PROMPT);
 
         // Read line
-        line_pos = 0;
+        let mut line_pos = 0;
         loop {
             if let Some(key) = drivers::keyboard::read_key() {
                 match key {

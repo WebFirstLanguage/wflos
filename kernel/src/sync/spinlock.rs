@@ -1,6 +1,6 @@
-/// No-std spinlock implementation
-/// Provides safe mutable access to hardware resources without `static mut`
-/// Critical pattern for memory safety in the kernel
+//! No-std spinlock implementation
+//! Provides safe mutable access to hardware resources without `static mut`
+//! Critical pattern for memory safety in the kernel
 
 use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut};
@@ -22,7 +22,7 @@ impl<T> Spinlock<T> {
         }
     }
 
-    pub fn lock(&self) -> SpinlockGuard<T> {
+    pub fn lock(&self) -> SpinlockGuard<'_, T> {
         while self
             .locked
             .compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed)

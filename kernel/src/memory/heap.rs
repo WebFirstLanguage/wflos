@@ -1,5 +1,5 @@
-/// Kernel heap allocator
-/// Provides dynamic memory allocation (Box, Vec, String, etc.)
+//! Kernel heap allocator
+//! Provides dynamic memory allocation (Box, Vec, String, etc.)
 
 use crate::memory::frame_allocator;
 use linked_list_allocator::LockedHeap;
@@ -8,7 +8,7 @@ use linked_list_allocator::LockedHeap;
 static ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 const HEAP_SIZE: usize = 64 * 1024; // 64KB heap
-const HEAP_FRAMES: usize = (HEAP_SIZE + 4095) / 4096; // 16 frames
+const HEAP_FRAMES: usize = HEAP_SIZE.div_ceil(4096); // 16 frames
 
 pub fn init(hhdm_offset: u64) -> Result<(), &'static str> {
     use crate::serial_println;

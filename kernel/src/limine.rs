@@ -1,5 +1,5 @@
-/// Limine bootloader protocol structures
-/// Documentation: https://github.com/limine-bootloader/limine/blob/trunk/PROTOCOL.md
+//! Limine bootloader protocol structures
+//! Documentation: https://github.com/limine-bootloader/limine/blob/trunk/PROTOCOL.md
 
 use core::ptr;
 
@@ -90,13 +90,21 @@ pub struct LimineMemoryMapEntry {
     pub entry_type: u64,
 }
 
+#[allow(dead_code)]
 pub const LIMINE_MEMMAP_USABLE: u64 = 0;
+#[allow(dead_code)]
 pub const LIMINE_MEMMAP_RESERVED: u64 = 1;
+#[allow(dead_code)]
 pub const LIMINE_MEMMAP_ACPI_RECLAIMABLE: u64 = 2;
+#[allow(dead_code)]
 pub const LIMINE_MEMMAP_ACPI_NVS: u64 = 3;
+#[allow(dead_code)]
 pub const LIMINE_MEMMAP_BAD_MEMORY: u64 = 4;
+#[allow(dead_code)]
 pub const LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE: u64 = 5;
+#[allow(dead_code)]
 pub const LIMINE_MEMMAP_KERNEL_AND_MODULES: u64 = 6;
+#[allow(dead_code)]
 pub const LIMINE_MEMMAP_FRAMEBUFFER: u64 = 7;
 
 #[used]
