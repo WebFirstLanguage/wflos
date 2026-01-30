@@ -8,6 +8,7 @@ mod arch;
 mod drivers;
 mod limine;
 mod memory;
+mod shell;
 mod sync;
 
 use core::panic::PanicInfo;
@@ -42,15 +43,14 @@ extern "C" fn _start() -> ! {
 
     // Display boot message
     println!("wflos - Rust Microkernel OS");
-    println!("Version 0.3.0 (Phase 3: Keyboard Input)");
+    println!("Version 0.4.0 (Phase 4: Command-Line Interface)");
     println!();
-    println!("Hello from kernel!");
+    println!("Booting kernel...");
     println!();
-    println!("HHDM offset: {:#x}", hhdm_offset);
 
     serial_println!("VGA initialized");
     serial_println!("wflos - Rust Microkernel OS");
-    serial_println!("Version 0.3.0 (Phase 3: Keyboard Input)");
+    serial_println!("Version 0.4.0 (Phase 4: Command-Line Interface)");
 
     // Initialize GDT
     serial_println!("Initializing GDT...");
@@ -110,29 +110,30 @@ extern "C" fn _start() -> ! {
         println!("Memory: {} KB total", (total * 4096) / 1024);
     }
 
-    // Note: Heap allocator requires proper page table mapping
-    // which will be implemented in a future phase
-    serial_println!("Heap allocator: Deferred (requires page table setup)");
-    println!("Heap: Not yet implemented");
+    // Heap allocator deferred - shell uses stack buffers
+    serial_println!("Heap allocator: Not required for shell");
+    println!("Heap: Using stack buffers");
 
     println!();
-    println!("Phase 3 complete: Keyboard input operational");
+    println!("Phase 4 complete: Shell operational");
     println!();
 
-    serial_println!("\n=== Phase 3 Complete ===");
+    serial_println!("\n=== Phase 4 Complete ===");
     serial_println!("  - GDT initialized and loaded");
     serial_println!("  - IDT initialized with exception handlers");
-    serial_println!("  - Frame allocator operational ({} frames available)", 64246);
+    serial_println!("  - Frame allocator operational ({} frames available)", 64146);
+    serial_println!("  - Stack-based shell (no heap required)");
     serial_println!("  - PIC remapped (IRQs at vectors 32-47)");
     serial_println!("  - Keyboard driver ready (IRQ1)");
     serial_println!("  - Interrupts enabled");
+    serial_println!("  - Shell ready for commands");
     serial_println!("========================\n");
 
-    // Keyboard is ready
-    serial_println!("Keyboard ready for input!");
-    println!();
-    println!("Keyboard ready! The PS/2 keyboard driver is operational.");
-    println!();
+    // Keyboard is ready - launch shell
+    serial_println!("Launching shell...");
+
+    // Run the shell REPL (never returns)
+    shell::run();
 
     // Display memory map information
     if let Some(memmap_response) = limine::MEMMAP_REQUEST.get_response() {

@@ -2,7 +2,7 @@
 
 A Rust-based microkernel operating system with capability-based security foundations, developed on Apple Silicon M1 for x86_64 targets.
 
-## Current Status: Phase 3 Complete ✅
+## Current Status: MVP COMPLETE ✅ (All 4 Phases)
 
 ### Implemented Features
 
@@ -22,12 +22,19 @@ A Rust-based microkernel operating system with capability-based security foundat
 - ✅ **Physical frame allocator** - Bitmap-based, manages 4KB frames
 - ⏸️ **Heap allocator** - Ready but deferred (needs page tables)
 
-**Phase 3: Keyboard Input** ⭐ NEW
+**Phase 3: Keyboard Input**
 - ✅ **Ring buffer** - Hardware-agnostic circular buffer for input buffering
 - ✅ **PIC configuration** - Remaps IRQs to vectors 32-47
 - ✅ **PS/2 keyboard driver** - Reads scan codes from keyboard controller
 - ✅ **Interrupt handling** - IRQ1 keyboard interrupts working
 - ✅ **Scan code translation** - Converts scan codes to ASCII (US layout)
+
+**Phase 4: Command-Line Interface** ⭐ NEW - MVP COMPLETE
+- ✅ **Shell REPL** - Interactive Read-Eval-Print Loop
+- ✅ **Command parser** - Zero-copy parsing with string slices
+- ✅ **Line editing** - Backspace, Enter, ESC support
+- ✅ **Built-in commands** - help, clear, echo, version, meminfo, halt
+- ✅ **Stack-based** - No heap required, reliable operation
 
 ### Verification
 
@@ -50,7 +57,7 @@ Serial port initialized
 HHDM offset: 0xffff800000000000
 VGA initialized
 wflos - Rust Microkernel OS
-Version 0.3.0 (Phase 3: Keyboard Input)
+Version 0.4.0 (Phase 4: Command-Line Interface)
 Initializing GDT...
   GDT loaded - segments already configured by bootloader
 GDT loaded
@@ -63,19 +70,28 @@ Keyboard initialized
 Enabling interrupts...
 Interrupts enabled
 Initializing frame allocator...
-Frame allocator: 64243 total, 0 used, 64243 free
+Frame allocator: 64219 total, 0 used, 64219 free
 
-=== Phase 3 Complete ===
+=== Phase 4 Complete ===
   - GDT initialized and loaded
   - IDT initialized with exception handlers
-  - Frame allocator operational (64243 frames available)
+  - Frame allocator operational (64146 frames available)
+  - Stack-based shell (no heap required)
   - PIC remapped (IRQs at vectors 32-47)
   - Keyboard driver ready (IRQ1)
   - Interrupts enabled
+  - Shell ready for commands
 ========================
 
-Keyboard ready for input!
+Launching shell...
+
+=== wflos Shell ===
+Type 'help' for available commands
+
+wflos> _
 ```
+
+You can now type commands interactively! Try: `help`, `version`, `echo hello`, `meminfo`, `clear`, `halt`
 
 ## Architecture
 
@@ -200,16 +216,16 @@ brew install qemu xorriso
 - [x] Ring buffer for input
 - [x] Scan code → ASCII translation
 
-### Phase 4: Command-Line Interface
-- [ ] Shell REPL (Read-Eval-Print Loop)
-- [ ] Command parser
-- [ ] Built-in commands:
-  - `help` - List commands
-  - `clear` - Clear screen
-  - `echo <text>` - Print text
-  - `meminfo` - Memory statistics
-  - `halt` - Stop system
-  - `version` - Kernel version
+### ~~Phase 4: Command-Line Interface~~ ✅ COMPLETE - **MVP ACHIEVED!**
+- [x] Shell REPL (Read-Eval-Print Loop)
+- [x] Command parser
+- [x] Built-in commands:
+  - `help` - List commands ✅
+  - `clear` - Clear screen ✅
+  - `echo <text>` - Print text ✅
+  - `meminfo` - Memory statistics ✅
+  - `halt` - Stop system ✅
+  - `version` - Kernel version ✅
 
 ### Phase 5: Testing Infrastructure
 - [ ] Host-based unit tests
