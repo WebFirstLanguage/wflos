@@ -37,7 +37,7 @@ impl IdtEntry {
     pub const fn new(handler: usize) -> Self {
         IdtEntry {
             offset_low: (handler & 0xFFFF) as u16,
-            selector: 0x08, // Kernel code segment
+            selector: crate::arch::x86_64::gdt::KERNEL_CODE_SELECTOR,
             ist: 0,
             type_attr: 0x8E, // Present, DPL=0, Interrupt Gate
             offset_mid: ((handler >> 16) & 0xFFFF) as u16,
@@ -129,6 +129,7 @@ macro_rules! exception_wrapper {
 
 exception_wrapper!(divide_by_zero_wrapper, divide_by_zero_handler);
 exception_wrapper!(debug_wrapper, debug_handler);
+exception_wrapper!(invalid_opcode_wrapper, invalid_opcode_handler);
 exception_wrapper!(breakpoint_wrapper, breakpoint_handler);
 exception_wrapper!(page_fault_wrapper, page_fault_handler);
 exception_wrapper!(general_protection_fault_wrapper, general_protection_fault_handler);
@@ -145,6 +146,7 @@ pub fn init() {
         idt.set_handler(0, divide_by_zero_wrapper as *const () as usize);
         idt.set_handler(1, debug_wrapper as *const () as usize);
         idt.set_handler(3, breakpoint_wrapper as *const () as usize);
+        idt.set_handler(6, invalid_opcode_wrapper as *const () as usize);
         idt.set_handler(8, double_fault_wrapper as *const () as usize);
         idt.set_handler(13, general_protection_fault_wrapper as *const () as usize);
         idt.set_handler(14, page_fault_wrapper as *const () as usize);

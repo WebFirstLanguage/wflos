@@ -42,8 +42,13 @@ pub fn handle_interrupt() {
 }
 
 /// Read a scan code from the buffer
+/// Disables interrupts while holding the lock to prevent deadlock with the
+/// keyboard IRQ handler, which also acquires KEYBOARD_BUFFER.
 pub fn read_scancode() -> Option<u8> {
-    KEYBOARD_BUFFER.lock().pop()
+    unsafe { core::arch::asm!("cli", options(nostack, preserves_flags)); }
+    let result = KEYBOARD_BUFFER.lock().pop();
+    unsafe { core::arch::asm!("sti", options(nostack, preserves_flags)); }
+    result
 }
 
 /// Read a key (blocking)

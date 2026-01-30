@@ -21,6 +21,17 @@ pub extern "C" fn debug_handler() {
 }
 
 #[no_mangle]
+pub extern "C" fn invalid_opcode_handler() {
+    serial_println!("EXCEPTION: Invalid Opcode (#UD)");
+    println!("EXCEPTION: Invalid Opcode (#UD)");
+    loop {
+        unsafe {
+            core::arch::asm!("hlt");
+        }
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn breakpoint_handler() {
     serial_println!("EXCEPTION: Breakpoint");
     println!("EXCEPTION: Breakpoint");
