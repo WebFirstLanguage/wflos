@@ -1,2 +1,15 @@
+# Rust build artifacts
+target/
 
+# macOS
 .DS_Store
+
+# Build artifacts
+iso_root/
+build_limine/
+os.iso
+*.o
+boot_output.txt
+qemu_output.txt
+serial_output.txt
+test_boot.sh
